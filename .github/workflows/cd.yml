@@ -1,0 +1,39 @@
+name: CD Backend
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-push-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build Docker image (backend)
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/vbstaff-backend:${{ github.ref_name }} \
+            -f backend/Dockerfile \
+            ./backend
+
+      - name: Push Docker image (backend)
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/vbstaff-backend:${{ github.ref_name }}
+
+      - name: Notify Watchtower
+        run: |
+          curl -X POST http://${{ secrets.WATCHTOWER_HOST }}:${{ secrets.WATCHTOWER_PORT }}/v1/update \
+          -H "Content-Type: application/json" \
+          -d '{
+                "service": "backend",
+                "image": "${{ secrets.DOCKERHUB_USERNAME }}/vbstaff-backend:${{ github.ref_name }}"
+              }'
