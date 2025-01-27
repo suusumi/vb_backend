@@ -23,7 +23,6 @@ jobs:
           docker build \
             -t ${{ secrets.DOCKERHUB_USERNAME }}/vbstaff-backend:${{ github.ref_name }} \
             -f backend/Dockerfile \
-            ./backend
 
       - name: Push Docker image (backend)
         run: |
