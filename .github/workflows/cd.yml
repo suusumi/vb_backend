@@ -35,6 +35,7 @@ jobs:
       - name: Notify Watchtower
         run: |
           curl -X POST http://${{ secrets.WATCHTOWER_HOST }}:${{ secrets.WATCHTOWER_PORT }}/v1/update \
+          -H "Authorization: Bearer ${{ secrets.WATCHTOWER_API_TOKEN }}" \
           -H "Content-Type: application/json" \
           -d '{
                 "service": "backend",
