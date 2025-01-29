@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, NotFoundException} from '@nestjs/common';
 import {ElasticsearchService} from '@nestjs/elasticsearch';
 
 const availableFilters = [
@@ -80,10 +80,23 @@ export class CommentsService {
     }
 
     async getCommentById(id: string) {
-        const response = await this.elasticsearchService.get({
+        const response = await this.elasticsearchService.search({
             index: 'comments',
-            id,
+            size: 1,
+            query: {
+                bool: {
+                    must: [
+                        {match_phrase: {id}},
+                    ],
+                },
+            },
         });
-        return response._source;
+
+        if (response.hits.hits.length === 0) {
+            throw new NotFoundException('Comment not found');
+        }
+
+        return response.hits.hits[0]._source;
     }
+
 }
