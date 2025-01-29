@@ -1,6 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import {ElasticsearchService} from '@nestjs/elasticsearch';
 
+const availableFilters = [
+    'postId', 'id', 'email', 'name', 'body'
+]
+
 @Injectable()
 export class CommentsService {
     constructor(private readonly elasticsearchService: ElasticsearchService) {
@@ -15,12 +19,8 @@ export class CommentsService {
 
         for (const [field, value] of Object.entries(filters)) {
             if (value) {
-                if (['postId', 'id'].includes(field)) {
-                    must.push({match: {[field]: value}});
-                } else if (field === 'email') {
-                    must.push({term: {[field]: value}});
-                } else if (['name', 'body'].includes(field)) {
-                    must.push({match: {[field]: value}});
+                if (availableFilters.includes(field)) {
+                    must.push({match_phrase: {[field]: value}});
                 }
             }
         }
